@@ -134,9 +134,6 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <xjbSources>
-                        <xjbSource>src/main/resources/xsd/global.xsd</xjbSource>
-                    </xjbSources>
                     <sources>
                         <source>src/main/resources/xsd/</source>
                     </sources>
