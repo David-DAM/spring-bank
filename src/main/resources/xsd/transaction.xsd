@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://bank.com/transaction"
+           xmlns="http://bank.com/transaction"
+           elementFormDefault="qualified">
+
+    <xs:element name="Transactions" type="TransactionList"/>
+
+    <xs:complexType name="TransactionList">
+        <xs:sequence>
+            <xs:element name="Transaction" type="TransactionType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="TransactionType">
+        <xs:sequence>
+            <xs:element name="id" type="xs:string"/>
+            <xs:element name="accountNumber" type="xs:string"/>
+            <xs:element name="amount" type="xs:decimal"/>
+            <xs:element name="type" type="TransactionTypeEnum"/>
+            <xs:element name="timestamp" type="xs:dateTime"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="TransactionTypeEnum">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="DEBIT"/>
+            <xs:enumeration value="CREDIT"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

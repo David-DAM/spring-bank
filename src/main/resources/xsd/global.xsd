@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://bank.com/common"
+           xmlns="http://bank.com/common"
+           elementFormDefault="qualified">
+
+    <xs:simpleType name="Currency">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="EUR"/>
+            <xs:enumeration value="USD"/>
+            <xs:enumeration value="GBP"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="IBAN">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="15"/>
+            <xs:maxLength value="34"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

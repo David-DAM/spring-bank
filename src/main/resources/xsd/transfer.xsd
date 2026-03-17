@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://bank.com/transfer"
+           xmlns="http://bank.com/transfer"
+           elementFormDefault="qualified">
+
+    <xs:element name="TransferRequest" type="TransferRequestType"/>
+    <xs:element name="TransferResponse" type="TransferResponseType"/>
+
+    <xs:complexType name="TransferRequestType">
+        <xs:sequence>
+            <xs:element name="fromAccount" type="xs:string"/>
+            <xs:element name="toAccount" type="xs:string"/>
+            <xs:element name="amount" type="xs:decimal"/>
+            <xs:element name="currency" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="TransferResponseType">
+        <xs:sequence>
+            <xs:element name="transactionId" type="xs:string"/>
+            <xs:element name="status" type="TransferStatus"/>
+            <xs:element name="timestamp" type="xs:dateTime"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="TransferStatus">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="SUCCESS"/>
+            <xs:enumeration value="FAILED"/>
+            <xs:enumeration value="PENDING"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>
