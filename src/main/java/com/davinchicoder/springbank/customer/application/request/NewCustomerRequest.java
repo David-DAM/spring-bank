@@ -1,4 +1,4 @@
-package com.davinchicoder.springbank.customer.application;
+package com.davinchicoder.springbank.customer.application.request;
 
 import java.time.Instant;
 

@@ -16,8 +16,8 @@ public class CustomerRepository {
         this.customers = new ConcurrentHashMap<>();
     }
 
-    public Customer findById(String id) {
-        return customers.get(id);
+    public Optional<Customer> findById(String id) {
+        return Optional.ofNullable(customers.get(id));
     }
 
     public Optional<Customer> findByEmail(String email) {

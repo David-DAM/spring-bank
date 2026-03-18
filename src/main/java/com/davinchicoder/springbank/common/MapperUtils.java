@@ -1,6 +1,7 @@
 package com.davinchicoder.springbank.common;
 
 import org.mapstruct.Mapper;
+import org.mapstruct.MappingConstants;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -9,7 +10,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.util.GregorianCalendar;
 
-@Mapper
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface MapperUtils {
 
     default Instant toInstant(XMLGregorianCalendar calendar) {
