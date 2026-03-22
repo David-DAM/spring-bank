@@ -1,4 +1,4 @@
-package com.davinchicoder.springbank.common;
+package com.davinchicoder.springbank.common.insfrastructure;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;

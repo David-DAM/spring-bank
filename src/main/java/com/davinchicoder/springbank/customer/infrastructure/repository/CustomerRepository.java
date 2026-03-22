@@ -1,4 +1,4 @@
-package com.davinchicoder.springbank.customer.infrastructure;
+package com.davinchicoder.springbank.customer.infrastructure.repository;
 
 import com.davinchicoder.springbank.customer.domain.Customer;
 import org.springframework.stereotype.Repository;

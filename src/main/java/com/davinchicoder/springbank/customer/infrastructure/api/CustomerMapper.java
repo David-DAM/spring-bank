@@ -1,7 +1,7 @@
-package com.davinchicoder.springbank.customer.infrastructure;
+package com.davinchicoder.springbank.customer.infrastructure.api;
 
 import com.bank.customer.CustomerType;
-import com.davinchicoder.springbank.common.MapperUtils;
+import com.davinchicoder.springbank.common.insfrastructure.MapperUtils;
 import com.davinchicoder.springbank.customer.application.request.NewCustomerRequest;
 import com.davinchicoder.springbank.customer.application.response.GetCustomerResponse;
 import com.davinchicoder.springbank.customer.application.response.NewCustomerResponse;

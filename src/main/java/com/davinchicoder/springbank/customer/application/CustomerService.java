@@ -4,10 +4,13 @@ import com.davinchicoder.springbank.customer.application.request.NewCustomerRequ
 import com.davinchicoder.springbank.customer.application.response.GetCustomerResponse;
 import com.davinchicoder.springbank.customer.application.response.NewCustomerResponse;
 import com.davinchicoder.springbank.customer.domain.Customer;
-import com.davinchicoder.springbank.customer.infrastructure.CustomerRepository;
+import com.davinchicoder.springbank.customer.domain.CustomerCreatedEvent;
+import com.davinchicoder.springbank.customer.infrastructure.repository.CustomerRepository;
+import com.davinchicoder.springbank.outbox.insfrastructure.database.OutboxEventRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -15,6 +18,7 @@ import java.util.UUID;
 public class CustomerService {
 
     private final CustomerRepository customerRepository;
+    private final OutboxEventRepository outboxEventRepository;
 
     public NewCustomerResponse createCustomer(NewCustomerRequest newCustomerRequest) {
 
@@ -26,6 +30,8 @@ public class CustomerService {
                 .build();
 
         Customer saved = customerRepository.save(customer);
+
+        outboxEventRepository.insertAll(List.of(CustomerCreatedEvent.of(saved)));
 
         return new NewCustomerResponse(
                 saved.getId(),

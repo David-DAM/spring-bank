@@ -1,4 +1,4 @@
-package com.davinchicoder.springbank.customer.infrastructure;
+package com.davinchicoder.springbank.customer.infrastructure.api;
 
 import com.bank.customer.CustomerType;
 import com.bank.customer.ObjectFactory;
