@@ -1,18 +1,15 @@
-package com.davinchicoder.springbank.customer.infrastructure.event_handler;
+package com.davinchicoder.springbank.customer.application.event_handler;
 
 import com.davinchicoder.springbank.common.domain.EventHandler;
 import com.davinchicoder.springbank.customer.domain.CustomerCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import tools.jackson.databind.ObjectMapper;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class CustomerCreatedEventHandler implements EventHandler {
-
-    private final ObjectMapper objectMapper;
+public class CustomerCreatedEventHandler implements EventHandler<CustomerCreatedEvent> {
 
     @Override
     public String eventType() {
@@ -20,8 +17,12 @@ public class CustomerCreatedEventHandler implements EventHandler {
     }
 
     @Override
-    public void handle(String payload) {
-        CustomerCreatedEvent event = objectMapper.readValue(payload, CustomerCreatedEvent.class);
+    public Class<CustomerCreatedEvent> payloadType() {
+        return CustomerCreatedEvent.class;
+    }
+
+    @Override
+    public void handle(CustomerCreatedEvent event) {
         log.info("Publishing customer: {}", event.customerId());
     }
 }

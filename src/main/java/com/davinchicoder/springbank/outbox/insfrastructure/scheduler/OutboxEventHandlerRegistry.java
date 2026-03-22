@@ -11,15 +11,15 @@ import java.util.stream.Collectors;
 @Component
 public class OutboxEventHandlerRegistry {
 
-    private final Map<String, EventHandler> handlers;
+    private final Map<String, EventHandler<?>> handlers;
 
-    public OutboxEventHandlerRegistry(List<EventHandler> handlerList) {
+    public OutboxEventHandlerRegistry(List<EventHandler<?>> handlerList) {
         handlers = handlerList.stream()
                 .collect(Collectors.toMap(EventHandler::eventType, Function.identity()));
     }
 
-    public EventHandler get(String eventType) {
-        EventHandler handler = handlers.get(eventType);
+    public EventHandler<?> get(String eventType) {
+        EventHandler<?> handler = handlers.get(eventType);
         if (handler == null) {
             throw new RuntimeException("No handler for event: " + eventType);
         }

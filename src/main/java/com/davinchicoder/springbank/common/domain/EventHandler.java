@@ -1,8 +1,10 @@
 package com.davinchicoder.springbank.common.domain;
 
-public interface EventHandler {
+public interface EventHandler<T extends DomainEvent> {
 
     String eventType();
 
-    void handle(String payload);
+    Class<T> payloadType();
+
+    void handle(T payload);
 }
