@@ -1,4 +1,4 @@
-package com.davinchicoder.springbank.outbox.insfrastructure.database;
+package com.davinchicoder.springbank.outbox.infrastructure.database;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -1,4 +1,4 @@
-package com.davinchicoder.springbank.outbox.insfrastructure.scheduler;
+package com.davinchicoder.springbank.outbox.infrastructure.scheduler;
 
 import com.davinchicoder.springbank.common.domain.EventHandler;
 import org.springframework.stereotype.Component;

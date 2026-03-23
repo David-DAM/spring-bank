@@ -1,4 +1,4 @@
-package com.davinchicoder.springbank.outbox.insfrastructure.database;
+package com.davinchicoder.springbank.outbox.infrastructure.database;
 
 import com.davinchicoder.springbank.common.domain.DomainEvent;
 import lombok.RequiredArgsConstructor;

@@ -1,8 +1,8 @@
-package com.davinchicoder.springbank.outbox.insfrastructure.scheduler;
+package com.davinchicoder.springbank.outbox.infrastructure.scheduler;
 
 import com.davinchicoder.springbank.common.domain.DomainEvent;
 import com.davinchicoder.springbank.common.domain.EventHandler;
-import com.davinchicoder.springbank.outbox.insfrastructure.database.OutboxEventRepository;
+import com.davinchicoder.springbank.outbox.infrastructure.database.OutboxEventRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -26,7 +26,7 @@ public class OutboxScheduler {
                 EventHandler<DomainEvent> handler = (EventHandler<DomainEvent>) outboxEventHandlerRegistry.get(outboxEvent.getEventType());
 
                 DomainEvent domainEvent = objectMapper.readValue(outboxEvent.getPayload(), handler.payloadType());
-                
+
                 handler.handle(domainEvent);
 
                 outboxEvent.setProcessed(true);

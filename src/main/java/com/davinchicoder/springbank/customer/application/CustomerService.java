@@ -6,7 +6,7 @@ import com.davinchicoder.springbank.customer.application.response.NewCustomerRes
 import com.davinchicoder.springbank.customer.domain.Customer;
 import com.davinchicoder.springbank.customer.domain.CustomerCreatedEvent;
 import com.davinchicoder.springbank.customer.infrastructure.repository.CustomerRepository;
-import com.davinchicoder.springbank.outbox.insfrastructure.database.OutboxEventRepository;
+import com.davinchicoder.springbank.outbox.infrastructure.database.OutboxEventRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.resilience.annotation.Retryable;
