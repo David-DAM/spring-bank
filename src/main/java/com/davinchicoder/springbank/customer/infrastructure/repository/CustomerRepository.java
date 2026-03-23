@@ -1,38 +1,31 @@
 package com.davinchicoder.springbank.customer.infrastructure.repository;
 
 import com.davinchicoder.springbank.customer.domain.Customer;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Repository
+@RequiredArgsConstructor
 public class CustomerRepository {
 
-    private final Map<String, Customer> customers;
-
-    public CustomerRepository() {
-        this.customers = new ConcurrentHashMap<>();
-    }
+    private final CustomerQueryRepository customerQueryRepository;
+    private final CustomerEntityMapper customerEntityMapper;
 
     public Optional<Customer> findById(String id) {
-        return Optional.ofNullable(customers.get(id));
+        return customerQueryRepository.findById(id).map(customerEntityMapper::toCustomer);
     }
 
     public Optional<Customer> findByEmail(String email) {
-        return customers.values().stream().filter(c -> c.getEmail().equals(email)).findFirst();
+        return customerQueryRepository.findByEmail(email).map(customerEntityMapper::toCustomer);
     }
 
-    public Customer save(Customer customer) {
-        return customers.computeIfAbsent(customer.getId(), _ -> customer);
-    }
+    public Customer upsert(Customer customer) {
+        CustomerEntity entity = customerEntityMapper.toCustomerEntity(customer);
 
-    public Customer update(Customer customer) {
-        return customers.computeIfPresent(customer.getId(), (_, _) -> customer);
-    }
+        CustomerEntity saved = customerQueryRepository.save(entity);
 
-    public void remove(String id) {
-        customers.remove(id);
+        return customerEntityMapper.toCustomer(saved);
     }
 }
