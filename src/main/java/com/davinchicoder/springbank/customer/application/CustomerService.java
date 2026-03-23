@@ -39,22 +39,12 @@ public class CustomerService {
 
         outboxEventRepository.insertAll(List.of(CustomerCreatedEvent.of(saved)));
 
-        return new NewCustomerResponse(
-                saved.getId(),
-                saved.getName(),
-                saved.getEmail(),
-                saved.getCreatedAt()
-        );
+        return NewCustomerResponse.of(saved);
     }
 
     public GetCustomerResponse getCustomer(String id) {
         Customer customer = customerRepository.findById(id).orElseThrow(() -> new RuntimeException("Customer not found"));
-        return new GetCustomerResponse(
-                customer.getId(),
-                customer.getName(),
-                customer.getEmail(),
-                customer.getCreatedAt()
-        );
+        return GetCustomerResponse.of(customer);
     }
 
 }
