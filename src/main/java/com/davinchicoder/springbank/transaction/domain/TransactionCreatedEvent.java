@@ -3,6 +3,7 @@ package com.davinchicoder.springbank.transaction.domain;
 import com.davinchicoder.springbank.common.domain.DomainEvent;
 
 import java.time.Instant;
+import java.util.UUID;
 
 public record TransactionCreatedEvent(
         String eventId,
@@ -13,7 +14,7 @@ public record TransactionCreatedEvent(
 
     public static TransactionCreatedEvent of(Transaction transaction) {
         return new TransactionCreatedEvent(
-                transaction.getId(),
+                UUID.randomUUID().toString(),
                 transaction.getId(),
                 transaction.getAccountNumber(),
                 transaction.getTimestamp()

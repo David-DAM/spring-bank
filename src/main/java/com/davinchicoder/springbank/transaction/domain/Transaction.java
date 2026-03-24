@@ -11,6 +11,8 @@ import java.time.Instant;
 public class Transaction {
 
     private String id;
+    private String idempotencyKey;
+    private Long version;
     private String accountNumber;
     private BigDecimal amount;
     private Instant timestamp;

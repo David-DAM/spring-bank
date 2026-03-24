@@ -1,9 +1,7 @@
 package com.davinchicoder.springbank.transaction.infrastructure.database;
 
 import com.davinchicoder.springbank.transaction.domain.TransactionType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -15,7 +13,12 @@ import java.time.Instant;
 public class TransactionEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
+    @Column(unique = true)
+    private String idempotencyKey;
+    @Version
+    private Long version;
     private String accountNumber;
     private BigDecimal amount;
     private Instant timestamp;

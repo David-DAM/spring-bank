@@ -25,7 +25,7 @@ public class TransactionService {
     @Transactional
     public void createTransaction(NewTransactionRequest request) {
 
-        Optional<Transaction> optionalTransaction = repository.findById(request.id());
+        Optional<Transaction> optionalTransaction = repository.findByIdempotencyKey(request.id());
 
         if (optionalTransaction.isPresent()) {
             log.info("Transaction already exists: {}", request.id());
@@ -33,11 +33,14 @@ public class TransactionService {
         }
 
         Transaction transaction = Transaction.builder()
-                .id(request.id())
+                .idempotencyKey(request.id())
                 .amount(request.amount())
+                .accountNumber(request.accountNumber())
+                .type(request.type())
+                .timestamp(request.timestamp())
                 .build();
 
-        Transaction saved = repository.upsert(transaction);
+        Transaction saved = repository.insert(transaction);
 
         eventRepository.insertAll(List.of(TransactionCreatedEvent.of(saved)));
 
