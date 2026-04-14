@@ -1,11 +1,15 @@
 package com.davinchicoder.springbank.transaction.infrastructure.api;
 
+
+import com.bank.transaction.ObjectFactory;
+import com.bank.transaction.TransactionResponseType;
 import com.bank.transaction.TransactionType;
-import com.davinchicoder.springbank.transaction.application.NewTransactionRequest;
 import com.davinchicoder.springbank.transaction.application.TransactionService;
+import com.davinchicoder.springbank.transaction.application.request.NewTransactionRequest;
+import com.davinchicoder.springbank.transaction.application.request.NewTransactionResponse;
+import jakarta.xml.bind.JAXBElement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,12 +24,13 @@ public class TransactionController {
     private final TransactionService service;
 
     @PostMapping(consumes = MediaType.APPLICATION_XML_VALUE)
-    public ResponseEntity<Void> createCustomer(@RequestBody TransactionType transactionType) {
+    public JAXBElement<TransactionResponseType> createTransaction(@RequestBody TransactionType transactionType) {
         NewTransactionRequest request = mapper.toNewTransactionRequest(transactionType);
 
-        service.createTransaction(request);
+        NewTransactionResponse transaction = service.createTransaction(request);
 
-        return ResponseEntity.accepted().build();
+        TransactionResponseType responseType = mapper.toTransactionResponseType(transaction);
+        return new ObjectFactory().createTransactionResponse(responseType);
     }
 
 }

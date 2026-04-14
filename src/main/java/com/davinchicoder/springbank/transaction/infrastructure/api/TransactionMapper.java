@@ -1,8 +1,10 @@
 package com.davinchicoder.springbank.transaction.infrastructure.api;
 
+import com.bank.transaction.TransactionResponseType;
 import com.bank.transaction.TransactionType;
 import com.davinchicoder.springbank.common.insfrastructure.MapperUtils;
-import com.davinchicoder.springbank.transaction.application.NewTransactionRequest;
+import com.davinchicoder.springbank.transaction.application.request.NewTransactionRequest;
+import com.davinchicoder.springbank.transaction.application.request.NewTransactionResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.ReportingPolicy;
@@ -12,4 +14,5 @@ public interface TransactionMapper {
 
     NewTransactionRequest toNewTransactionRequest(TransactionType transactionType);
 
+    TransactionResponseType toTransactionResponseType(NewTransactionResponse response);
 }

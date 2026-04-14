@@ -8,7 +8,6 @@ import java.util.UUID;
 public record TransactionCreatedEvent(
         String eventId,
         String transactionId,
-        String customerId,
         Instant occurredAt
 ) implements DomainEvent {
 
@@ -16,7 +15,6 @@ public record TransactionCreatedEvent(
         return new TransactionCreatedEvent(
                 UUID.randomUUID().toString(),
                 transaction.getId(),
-                transaction.getAccountNumber(),
                 transaction.getTimestamp()
         );
     }

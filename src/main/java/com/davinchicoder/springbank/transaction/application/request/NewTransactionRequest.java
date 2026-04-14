@@ -1,4 +1,4 @@
-package com.davinchicoder.springbank.transaction.application;
+package com.davinchicoder.springbank.transaction.application.request;
 
 import com.davinchicoder.springbank.transaction.domain.TransactionType;
 
@@ -7,9 +7,10 @@ import java.time.Instant;
 
 public record NewTransactionRequest(
         String id,
-        String accountNumber,
+        String fromAccount,
+        String toAccount,
         BigDecimal amount,
         TransactionType type,
-        Instant timestamp
+        Instant createdAt
 ) {
 }

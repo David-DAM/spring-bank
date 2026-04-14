@@ -20,7 +20,7 @@
         <xs:sequence>
             <xs:element name="transactionId" type="xs:string"/>
             <xs:element name="status" type="TransferStatus"/>
-            <xs:element name="timestamp" type="xs:dateTime"/>
+            <xs:element name="createdAt" type="xs:dateTime"/>
         </xs:sequence>
     </xs:complexType>
 

@@ -1,10 +1,10 @@
 package com.davinchicoder.springbank.transaction.infrastructure.database;
 
+import com.davinchicoder.springbank.transaction.domain.TransactionStatus;
 import com.davinchicoder.springbank.transaction.domain.TransactionType;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 
 @Data
@@ -19,9 +19,8 @@ public class TransactionEntity {
     private String idempotencyKey;
     @Version
     private Long version;
-    private String accountNumber;
-    private BigDecimal amount;
-    private Instant timestamp;
     private TransactionType type;
+    private TransactionStatus status;
+    private Instant timestamp;
 
 }
