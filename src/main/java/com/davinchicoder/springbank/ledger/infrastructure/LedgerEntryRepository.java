@@ -34,4 +34,10 @@ public class LedgerEntryRepository {
 
         repository.saveAll(entities);
     }
+
+    public List<LedgerEntry> findAll() {
+        return repository.findAll().stream()
+                .map(mapper::toLedgerEntry)
+                .collect(Collectors.toList());
+    }
 }

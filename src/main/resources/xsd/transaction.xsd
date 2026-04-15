@@ -4,13 +4,7 @@
            xmlns="http://bank.com/transaction"
            elementFormDefault="qualified">
 
-    <xs:element name="Transactions" type="TransactionList"/>
-
-    <xs:complexType name="TransactionList">
-        <xs:sequence>
-            <xs:element name="Transaction" type="TransactionType" maxOccurs="unbounded"/>
-        </xs:sequence>
-    </xs:complexType>
+    <xs:element name="Transaction" type="TransactionType"/>
 
     <xs:complexType name="TransactionType">
         <xs:sequence>
