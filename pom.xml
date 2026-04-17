@@ -30,6 +30,10 @@
         <java.version>25</java.version>
         <mapstruct.version>1.6.2</mapstruct.version>
         <lombok.mapstruct.version>0.2.0</lombok.mapstruct.version>
+        <xml-bind.version>4.0.5</xml-bind.version>
+        <cucumber.version>7.14.0</cucumber.version>
+        <gatling.version>3.15.0</gatling.version>
+        <gatling-plugin.version>4.21.5</gatling-plugin.version>
     </properties>
     <dependencies>
         <dependency>
@@ -76,7 +80,7 @@
         <dependency>
             <groupId>jakarta.xml.bind</groupId>
             <artifactId>jakarta.xml.bind-api</artifactId>
-            <version>4.0.5</version>
+            <version>${xml-bind.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -96,21 +100,28 @@
         <dependency>
             <groupId>io.cucumber</groupId>
             <artifactId>cucumber-java</artifactId>
-            <version>7.14.0</version>
+            <version>${cucumber.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>io.cucumber</groupId>
             <artifactId>cucumber-junit</artifactId>
-            <version>7.14.0</version>
+            <version>${cucumber.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>io.cucumber</groupId>
             <artifactId>cucumber-spring</artifactId>
-            <version>7.14.0</version>
+            <version>${cucumber.version}</version>
+            <scope>test</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>io.gatling.highcharts</groupId>
+            <artifactId>gatling-charts-highcharts</artifactId>
+            <version>${gatling.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -125,6 +136,7 @@
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
                         </path>
                         <path>
                             <groupId>org.mapstruct</groupId>
@@ -170,6 +182,11 @@
                     <outputDirectory>${project.build.directory}/generated-sources/jaxb</outputDirectory>
                     <clearOutputDir>false</clearOutputDir>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>io.gatling</groupId>
+                <artifactId>gatling-maven-plugin</artifactId>
+                <version>${gatling-plugin.version}</version>
             </plugin>
         </plugins>
     </build>
