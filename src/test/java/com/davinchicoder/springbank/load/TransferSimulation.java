@@ -23,7 +23,8 @@ public class TransferSimulation extends Simulation {
                             .body(StringBody(session -> buildXml()))
                             .check(
                                     status().is(200),
-                                    responseTimeInMillis().lt(500)
+                                    responseTimeInMillis().lt(500),
+                                    bodyString().notNull()
                             )
             )
             .pause(1, 3);
