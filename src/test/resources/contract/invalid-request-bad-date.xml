@@ -1,0 +1,8 @@
+<Transaction xmlns="http://bank.com/transaction">
+    <id>TR-1</id>
+    <fromAccount>ES123</fromAccount>
+    <toAccount>ES456</toAccount>
+    <amount>100.50</amount>
+    <type>DEBIT</type>
+    <createdAt>INVALID_DATE</createdAt>
+</Transaction>

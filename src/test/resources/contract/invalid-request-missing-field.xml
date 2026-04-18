@@ -1,0 +1,4 @@
+<Transaction xmlns="http://bank.com/transaction">
+    <id>TR-1</id>
+    <amount>100.50</amount>
+</Transaction>
