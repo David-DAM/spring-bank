@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import tools.jackson.databind.ObjectMapper;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Repository
@@ -13,15 +15,11 @@ public class OutboxEventRepository {
 
     private final ObjectMapper objectMapper;
 
-    private final OutboxQueryRepository outboxQueryRepository;
+    private final OutboxQueryRepository repository;
 
     public List<OutboxEntity> findLastUnprocessed() {
 
-        return outboxQueryRepository.findTop100ByProcessedOrderByOccurredAt(false);
-    }
-
-    public List<OutboxEntity> findLastProcessed() {
-        return outboxQueryRepository.findTop100ByProcessedOrderByOccurredAt(true);
+        return repository.lockNextBatch();
     }
 
     public void insertAll(List<DomainEvent> events) {
@@ -33,21 +31,30 @@ public class OutboxEventRepository {
             outboxEvent.setEventType(domainEvent.getClass().getSimpleName());
             outboxEvent.setPayload(objectMapper.writeValueAsString(domainEvent));
             outboxEvent.setOccurredAt(domainEvent.occurredAt());
-            outboxEvent.setProcessed(false);
+            outboxEvent.setStatus(OutboxStatus.PENDING);
 
             return outboxEvent;
         }).toList();
 
-        outboxQueryRepository.saveAll(entities);
+        repository.saveAll(entities);
 
     }
 
-    public void upsert(OutboxEntity event) {
-        outboxQueryRepository.save(event);
+    public void upsertAll(List<OutboxEntity> events) {
+        repository.saveAll(events);
     }
 
-    public void delete(OutboxEntity event) {
-        outboxQueryRepository.delete(event);
+    public void deleteAll(List<OutboxEntity> events) {
+        repository.deleteAll(events);
+    }
+
+    public void deleteProcessedEvents() {
+        Instant expiration = Instant.now().minus(7, ChronoUnit.DAYS);
+
+        int deleted;
+        do {
+            deleted = repository.deleteBatch(expiration);
+        } while (deleted > 0);
     }
 
 }

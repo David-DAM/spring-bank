@@ -1,9 +1,6 @@
 package com.davinchicoder.springbank.outbox.infrastructure.database;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.Instant;
@@ -12,12 +9,27 @@ import java.time.Instant;
 @Entity
 @Table(name = "outbox_events")
 public class OutboxEntity {
+    
     @Id
     private String id;
+
     private String eventType;
+
     @Column(columnDefinition = "TEXT")
     private String payload;
+
     private Instant occurredAt;
-    private boolean processed;
+
+    @Enumerated(EnumType.STRING)
+    private OutboxStatus status;
+
+    private int retryCount;
+
+    private Instant lastAttemptAt;
+
+    private Instant processedAt;
+
+    @Column(columnDefinition = "TEXT")
+    private String errorMessage;
 
 }

@@ -2,55 +2,65 @@ package com.davinchicoder.springbank.outbox.infrastructure.scheduler;
 
 import com.davinchicoder.springbank.common.domain.DomainEvent;
 import com.davinchicoder.springbank.common.domain.EventHandler;
+import com.davinchicoder.springbank.outbox.infrastructure.database.OutboxEntity;
 import com.davinchicoder.springbank.outbox.infrastructure.database.OutboxEventRepository;
+import com.davinchicoder.springbank.outbox.infrastructure.database.OutboxStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
 
+import java.time.Instant;
+import java.util.List;
+
 @Slf4j
 @RequiredArgsConstructor
 @Component
 public class OutboxScheduler {
 
-    private final OutboxEventRepository outboxEventRepository;
-    private final OutboxEventHandlerRegistry outboxEventHandlerRegistry;
-    private final ObjectMapper objectMapper;
+    private final OutboxEventRepository repository;
+    private final OutboxEventHandlerRegistry handlerRegistry;
+    private final ObjectMapper mapper;
 
-    @Scheduled(cron = "*/15 * * * * *")
+    @Scheduled(cron = "*/5 * * * * *")
     public void findAllUnprocessedEvents() {
-        outboxEventRepository.findLastUnprocessed().forEach(outboxEvent -> {
+
+        List<OutboxEntity> unprocessedEvents = repository.findLastUnprocessed();
+
+        unprocessedEvents.forEach(event -> {
             try {
 
-                EventHandler<DomainEvent> handler = (EventHandler<DomainEvent>) outboxEventHandlerRegistry.get(outboxEvent.getEventType());
+                EventHandler<DomainEvent> handler = (EventHandler<DomainEvent>) handlerRegistry.get(event.getEventType());
 
-                DomainEvent domainEvent = objectMapper.readValue(outboxEvent.getPayload(), handler.payloadType());
+                DomainEvent domainEvent = mapper.readValue(event.getPayload(), handler.payloadType());
 
                 handler.handle(domainEvent);
 
-                outboxEvent.setProcessed(true);
+                event.setStatus(OutboxStatus.PROCESSED);
+                event.setProcessedAt(Instant.now());
 
-                outboxEventRepository.upsert(outboxEvent);
             } catch (Exception e) {
-                log.error("Error processing event: {}", outboxEvent.getId(), e);
+                log.error("Error processing event: {}", event.getId(), e);
+                event.setRetryCount(event.getRetryCount() + 1);
+                event.setLastAttemptAt(Instant.now());
+                event.setErrorMessage(e.getMessage());
+
+                if (event.getRetryCount() >= 3) {
+                    event.setStatus(OutboxStatus.FAILED);
+                } else {
+                    event.setStatus(OutboxStatus.PENDING);
+                }
             }
         });
+
+        repository.upsertAll(unprocessedEvents);
 
     }
 
     @Scheduled(cron = "0 0 * * * *")
     public void clearProcessedEvents() {
-
-        outboxEventRepository.findLastProcessed().forEach(outboxEvent -> {
-            try {
-                outboxEventRepository.delete(outboxEvent);
-
-            } catch (Exception e) {
-                log.error("Error processing event: {}", outboxEvent.getId(), e);
-            }
-        });
-
+        repository.deleteProcessedEvents();
     }
 
 }
