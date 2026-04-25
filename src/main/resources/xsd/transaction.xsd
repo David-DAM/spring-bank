@@ -37,8 +37,9 @@
     <xs:simpleType name="TransactionStatusEnum">
         <xs:restriction base="xs:string">
             <xs:enumeration value="PENDING"/>
-            <xs:enumeration value="FAILED"/>
+            <xs:enumeration value="RESERVED"/>
             <xs:enumeration value="COMPLETED"/>
+            <xs:enumeration value="FAILED"/>
         </xs:restriction>
     </xs:simpleType>
 

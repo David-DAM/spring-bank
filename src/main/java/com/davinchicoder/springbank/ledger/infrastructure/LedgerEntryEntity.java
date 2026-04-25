@@ -17,7 +17,9 @@ public class LedgerEntryEntity {
     private String id;
     private String transactionId;
     private String accountId;
+    @Column(precision = 19, scale = 4)
     private BigDecimal amount;
+    @Enumerated(EnumType.STRING)
     private EntryType type;
     private Instant createdAt;
 

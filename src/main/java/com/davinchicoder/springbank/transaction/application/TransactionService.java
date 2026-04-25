@@ -1,5 +1,7 @@
 package com.davinchicoder.springbank.transaction.application;
 
+import com.davinchicoder.springbank.account.domain.Account;
+import com.davinchicoder.springbank.account.infrastructure.AccountRepository;
 import com.davinchicoder.springbank.ledger.domain.EntryType;
 import com.davinchicoder.springbank.ledger.domain.LedgerEntry;
 import com.davinchicoder.springbank.ledger.infrastructure.LedgerEntryRepository;
@@ -26,6 +28,7 @@ public class TransactionService {
 
     private final TransactionRepository transactionRepository;
     private final LedgerEntryRepository ledgerEntryRepository;
+    private final AccountRepository accountRepository;
     private final OutboxEventRepository eventRepository;
 
     @Retryable(maxRetries = 3)
@@ -36,21 +39,93 @@ public class TransactionService {
 
         if (optionalTransaction.isPresent()) {
             log.info("Transaction already exists: {}", request.id());
-            return null;
+            return NewTransactionResponse.of(optionalTransaction.get());
         }
 
-        Transaction transaction = Transaction.builder()
-                .idempotencyKey(request.id())
-                .timestamp(request.createdAt())
-                .build();
+        Transaction saved = saveTransaction(request);
 
-        Transaction saved = transactionRepository.insert(transaction);
+        try {
+            validateTransaction(request);
 
+            validateBalance(request);
+
+            Transaction reserved = reserveTransaction(saved);
+
+            createLedgerEntries(request, reserved);
+
+            Transaction completed = completeTransaction(reserved);
+
+            publishDomainEvents(completed);
+
+            return NewTransactionResponse.of(completed);
+
+        } catch (Exception e) {
+            log.error("Error processing transaction: {}", request.id(), e);
+            saved.fail();
+            transactionRepository.update(saved);
+            throw e;
+        }
+    }
+
+    private Transaction completeTransaction(Transaction reserved) {
+        reserved.complete();
+        return transactionRepository.update(reserved);
+    }
+
+    private Transaction reserveTransaction(Transaction saved) {
+        saved.reserve();
+        return transactionRepository.update(saved);
+    }
+
+    private void validateBalance(NewTransactionRequest request) {
+        BigDecimal balance = ledgerEntryRepository.calculateBalance(request.fromAccount());
+
+        if (balance.compareTo(request.amount()) < 0) {
+            log.info("Insufficient funds: {}", request.fromAccount());
+            throw new IllegalStateException("Insufficient funds");
+        }
+    }
+
+    private void validateTransaction(NewTransactionRequest request) {
+        if (request.fromAccount().equals(request.toAccount())) {
+            log.info("Self-transfer not allowed: {}", request.fromAccount());
+            throw new IllegalStateException("Self-transfer not allowed");
+        }
+
+        if (request.amount().compareTo(BigDecimal.valueOf(100000)) > 0) {
+            log.info("Transaction amount too high: {}", request.amount());
+            throw new IllegalStateException("Transaction amount too high");
+        }
+
+        Optional<Account> optionalFrom = accountRepository.findByIban(request.fromAccount());
+
+        if (optionalFrom.isEmpty()) {
+            log.info("Account not found: {}", request.fromAccount());
+            throw new IllegalStateException("Account not found");
+        }
+
+        optionalFrom.get().validateCanOperate();
+
+        Optional<Account> optionalTo = accountRepository.findByIban(request.toAccount());
+
+        if (optionalTo.isEmpty()) {
+            log.info("Account not found: {}", request.toAccount());
+            throw new IllegalStateException("Account not found");
+        }
+
+        optionalTo.get().validateCanOperate();
+    }
+
+    private void publishDomainEvents(Transaction saved) {
+        eventRepository.insertAll(List.of(TransactionCreatedEvent.of(saved)));
+    }
+
+    private void createLedgerEntries(NewTransactionRequest request, Transaction saved) {
         LedgerEntry debit = LedgerEntry.builder()
                 .transactionId(saved.getId())
                 .accountId(request.fromAccount())
                 .type(EntryType.DEBIT)
-                .amount(request.amount())
+                .amount(request.amount().negate())
                 .build();
 
         LedgerEntry credit = LedgerEntry.builder()
@@ -60,29 +135,17 @@ public class TransactionService {
                 .amount(request.amount())
                 .build();
 
-        validateBalanced(List.of(debit, credit));
-
         ledgerEntryRepository.upsertAll(List.of(debit, credit));
-
-        eventRepository.insertAll(List.of(TransactionCreatedEvent.of(saved)));
-
-        return NewTransactionResponse.of(saved);
     }
 
-    private void validateBalanced(List<LedgerEntry> entries) {
-        BigDecimal debit = entries.stream()
-                .filter(e -> EntryType.DEBIT.equals(e.getType()))
-                .map(LedgerEntry::getAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    private Transaction saveTransaction(NewTransactionRequest request) {
+        Transaction transaction = Transaction.builder()
+                .idempotencyKey(request.id())
+                .timestamp(request.createdAt())
+                .build();
 
-        BigDecimal credit = entries.stream()
-                .filter(e -> EntryType.CREDIT.equals(e.getType()))
-                .map(LedgerEntry::getAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        if (!debit.equals(credit)) {
-            throw new IllegalStateException("Unbalanced transaction");
-        }
+        return transactionRepository.insert(transaction);
     }
+
 
 }

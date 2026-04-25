@@ -3,8 +3,6 @@ package com.davinchicoder.springbank.acceptance;
 import com.bank.transaction.ObjectFactory;
 import com.bank.transaction.TransactionType;
 import com.bank.transaction.TransactionTypeEnum;
-import com.davinchicoder.springbank.ledger.domain.EntryType;
-import com.davinchicoder.springbank.ledger.domain.LedgerEntry;
 import com.davinchicoder.springbank.ledger.infrastructure.LedgerEntryRepository;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -22,10 +20,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -36,6 +31,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 public class TransferFeatureStepsCaseIT {
 
+    public static final String FROM_ACCOUNT = "ES3601520826";
+    public static final String TO_ACCOUNT = "ES3601520827";
     private final RestClient restClient;
     private final LedgerEntryRepository ledgerEntryRepository;
 
@@ -51,18 +48,17 @@ public class TransferFeatureStepsCaseIT {
         transactionType.setId(UUID.randomUUID().toString());
         transactionType.setType(TransactionTypeEnum.DEBIT);
         transactionType.setAmount(BigDecimal.valueOf(quantity));
-        transactionType.setFromAccount("ES3601520826");
-        transactionType.setToAccount("ES3601520826");
+        transactionType.setFromAccount(FROM_ACCOUNT);
+        transactionType.setToAccount(TO_ACCOUNT);
         transactionType.setAmount(BigDecimal.valueOf(quantity));
         transactionType.setCreatedAt(DatatypeFactory.newInstance().newXMLGregorianCalendar(GregorianCalendar.from(Instant.now().atZone(ZoneId.systemDefault()))));
 
-        JAXBElement<TransactionType> requestBody =
-                new ObjectFactory().createTransaction(transactionType);
+        JAXBElement<TransactionType> requestBody = new ObjectFactory().createTransaction(transactionType);
 
         restClient.post()
                 .uri("/api/v1/transaction")
                 .body(requestBody)
-                .exchange((request, response) -> {
+                .exchange((_, response) -> {
                     assertEquals(200, response.getStatusCode().value());
                     return null;
                 });
@@ -70,15 +66,7 @@ public class TransferFeatureStepsCaseIT {
 
     @Then("The final amount is {int} euros")
     public void the_final_amount_is_euros(Integer expected) {
-        Map<EntryType, List<LedgerEntry>> groupedEntries = ledgerEntryRepository.findAll()
-                .stream()
-                .collect(Collectors.groupingBy(LedgerEntry::getType));
-
-        LedgerEntry debit = groupedEntries.get(EntryType.DEBIT).getFirst();
-        LedgerEntry credit = groupedEntries.get(EntryType.CREDIT).getFirst();
-
-        BigDecimal finalBalance = debit.getAmount().subtract(credit.getAmount());
-
-        assertEquals(0, finalBalance.intValue());
+        BigDecimal balance = ledgerEntryRepository.calculateBalance(FROM_ACCOUNT);
+        assertEquals(expected, balance.intValue());
     }
 }

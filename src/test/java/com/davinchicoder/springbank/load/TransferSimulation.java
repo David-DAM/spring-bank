@@ -1,6 +1,8 @@
 package com.davinchicoder.springbank.load;
 
+import io.gatling.javaapi.core.FeederBuilder;
 import io.gatling.javaapi.core.ScenarioBuilder;
+import io.gatling.javaapi.core.Session;
 import io.gatling.javaapi.core.Simulation;
 import io.gatling.javaapi.http.HttpProtocolBuilder;
 
@@ -16,11 +18,14 @@ public class TransferSimulation extends Simulation {
             .baseUrl("http://localhost:8080")
             .contentTypeHeader("application/xml");
 
-    ScenarioBuilder scenario = scenario("Bank Transfers Load Test")
+    FeederBuilder<String> feeder = csv("load/accounts.csv").circular();
+
+    ScenarioBuilder bankTransferScenario = scenario("Bank Transfers Load Test")
+            .feed(feeder)
             .exec(
                     http("Create Transaction")
                             .post("/api/v1/transaction")
-                            .body(StringBody(session -> buildXml()))
+                            .body(StringBody(this::buildXml))
                             .check(
                                     status().is(200),
                                     responseTimeInMillis().lt(500),
@@ -31,7 +36,7 @@ public class TransferSimulation extends Simulation {
 
     {
         setUp(
-                scenario.injectOpen(
+                bankTransferScenario.injectOpen(
                         nothingFor(5),
                         rampUsers(200).during(10),
                         constantUsersPerSec(100).during(30)
@@ -39,29 +44,21 @@ public class TransferSimulation extends Simulation {
         ).protocols(httpProtocol);
     }
 
-    private String buildXml() {
+    private String buildXml(Session session) {
         return """
                     <Transaction xmlns="http://bank.com/transaction">
                         <id>%s</id>
-                        <fromAccount>ES%s</fromAccount>
-                        <toAccount>ES%s</toAccount>
+                        <fromAccount>%s</fromAccount>
+                        <toAccount>%s</toAccount>
                         <amount>%d</amount>
                         <type>DEBIT</type>
                         <createdAt>2026-03-18T10:45:30</createdAt>
                     </Transaction>
                 """.formatted(
                 UUID.randomUUID(),
-                randomAccount(),
-                randomAccount(),
-                randomAmount()
+                session.getString("fromAccount"),
+                session.getString("toAccount"),
+                session.getInt("amount")
         );
-    }
-
-    private String randomAccount() {
-        return String.valueOf(100000000 + (int) (Math.random() * 900000000));
-    }
-
-    private int randomAmount() {
-        return 10 + (int) (Math.random() * 1000);
     }
 }
