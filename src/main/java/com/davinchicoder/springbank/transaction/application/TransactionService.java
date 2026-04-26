@@ -78,9 +78,8 @@ public class TransactionService {
     }
 
     private void validateBalance(NewTransactionRequest request) {
-        BigDecimal balance = ledgerEntryRepository.calculateBalance(request.fromAccount());
-
-        if (balance.compareTo(request.amount()) < 0) {
+        Long balanceInCents = ledgerEntryRepository.calculateBalanceInCents(request.fromAccount());
+        if (balanceInCents.compareTo(request.amount().movePointRight(2).longValueExact()) < 0) {
             log.info("Insufficient funds: {}", request.fromAccount());
             throw new IllegalStateException("Insufficient funds");
         }
@@ -121,18 +120,21 @@ public class TransactionService {
     }
 
     private void createLedgerEntries(NewTransactionRequest request, Transaction saved) {
+
+        long amountInCents = request.amount().movePointRight(2).longValueExact();
+
         LedgerEntry debit = LedgerEntry.builder()
                 .transactionId(saved.getId())
                 .accountId(request.fromAccount())
                 .type(EntryType.DEBIT)
-                .amount(request.amount().negate())
+                .amount(amountInCents)
                 .build();
 
         LedgerEntry credit = LedgerEntry.builder()
                 .transactionId(saved.getId())
                 .accountId(request.toAccount())
                 .type(EntryType.CREDIT)
-                .amount(request.amount())
+                .amount(amountInCents)
                 .build();
 
         ledgerEntryRepository.upsertAll(List.of(debit, credit));

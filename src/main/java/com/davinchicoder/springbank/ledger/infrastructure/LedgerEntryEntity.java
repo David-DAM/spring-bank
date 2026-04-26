@@ -4,7 +4,6 @@ import com.davinchicoder.springbank.ledger.domain.EntryType;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 
 @Data
@@ -17,8 +16,7 @@ public class LedgerEntryEntity {
     private String id;
     private String transactionId;
     private String accountId;
-    @Column(precision = 19, scale = 4)
-    private BigDecimal amount;
+    private Long amount;
     @Enumerated(EnumType.STRING)
     private EntryType type;
     private Instant createdAt;

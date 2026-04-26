@@ -66,7 +66,7 @@ public class TransferFeatureStepsCaseIT {
 
     @Then("The final amount is {int} euros")
     public void the_final_amount_is_euros(Integer expected) {
-        BigDecimal balance = ledgerEntryRepository.calculateBalance(FROM_ACCOUNT);
-        assertEquals(expected, balance.intValue());
+        Long balanceInCents = ledgerEntryRepository.calculateBalanceInCents(FROM_ACCOUNT);
+        assertEquals(expected, balanceInCents.intValue() / 100);
     }
 }

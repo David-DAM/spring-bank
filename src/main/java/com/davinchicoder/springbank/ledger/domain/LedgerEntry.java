@@ -3,7 +3,6 @@ package com.davinchicoder.springbank.ledger.domain;
 import lombok.Builder;
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
@@ -13,22 +12,22 @@ public class LedgerEntry {
     private String id;
     private String transactionId;
     private String accountId;
-    private BigDecimal amount;
+    private Long amount;
     private EntryType type;
     private Instant createdAt;
 
     public void validateBalanced(List<LedgerEntry> entries) {
-        BigDecimal debit = entries.stream()
+        long debit = entries.stream()
                 .filter(e -> EntryType.DEBIT.equals(e.getType()))
                 .map(LedgerEntry::getAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .reduce(0L, Long::sum);
 
-        BigDecimal credit = entries.stream()
+        long credit = entries.stream()
                 .filter(e -> EntryType.CREDIT.equals(e.getType()))
                 .map(LedgerEntry::getAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .reduce(0L, Long::sum);
 
-        if (!debit.equals(credit)) {
+        if (debit != credit) {
             throw new IllegalStateException("Unbalanced transaction");
         }
     }

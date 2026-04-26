@@ -4,7 +4,6 @@ import com.davinchicoder.springbank.ledger.domain.LedgerEntry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -26,9 +25,9 @@ public class LedgerEntryRepository {
                 .collect(Collectors.toList());
     }
 
-    public BigDecimal calculateBalance(String accountId) {
-        BigDecimal balance = repository.sumByAccountId(accountId);
-        return balance != null ? balance : BigDecimal.ZERO;
+    public Long calculateBalanceInCents(String accountId) {
+        Long balance = repository.sumByAccountId(accountId);
+        return balance != null ? balance : Long.valueOf(0);
     }
 
     public LedgerEntry upsert(LedgerEntry customer) {
