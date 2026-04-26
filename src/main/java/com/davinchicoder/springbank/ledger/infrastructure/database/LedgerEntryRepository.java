@@ -1,4 +1,4 @@
-package com.davinchicoder.springbank.ledger.infrastructure;
+package com.davinchicoder.springbank.ledger.infrastructure.database;
 
 import com.davinchicoder.springbank.ledger.domain.LedgerEntry;
 import lombok.RequiredArgsConstructor;
@@ -26,8 +26,12 @@ public class LedgerEntryRepository {
     }
 
     public Long calculateBalanceInCents(String accountId) {
-        Long balance = repository.sumByAccountId(accountId);
+        Long balance = repository.calculateBalanceByAccountId(accountId);
         return balance != null ? balance : Long.valueOf(0);
+    }
+
+    public List<String> findUnbalancedTransactions() {
+        return repository.findUnbalancedTransactions();
     }
 
     public LedgerEntry upsert(LedgerEntry customer) {

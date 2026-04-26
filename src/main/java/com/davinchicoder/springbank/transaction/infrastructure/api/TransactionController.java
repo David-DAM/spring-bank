@@ -10,10 +10,7 @@ import com.davinchicoder.springbank.transaction.application.request.NewTransacti
 import jakarta.xml.bind.JAXBElement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/transaction")
@@ -24,8 +21,8 @@ public class TransactionController {
     private final TransactionService service;
 
     @PostMapping(consumes = MediaType.APPLICATION_XML_VALUE)
-    public JAXBElement<TransactionResponseType> createTransaction(@RequestBody TransactionType transactionType) {
-        NewTransactionRequest request = mapper.toNewTransactionRequest(transactionType);
+    public JAXBElement<TransactionResponseType> createTransaction(@RequestBody TransactionType transactionType, @RequestHeader("Idempotency-Key") String idempotencyKey) {
+        NewTransactionRequest request = mapper.toNewTransactionRequest(transactionType, idempotencyKey);
 
         NewTransactionResponse transaction = service.createTransaction(request);
 

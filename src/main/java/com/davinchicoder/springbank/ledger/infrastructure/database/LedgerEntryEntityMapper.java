@@ -1,4 +1,4 @@
-package com.davinchicoder.springbank.ledger.infrastructure;
+package com.davinchicoder.springbank.ledger.infrastructure.database;
 
 import com.davinchicoder.springbank.common.insfrastructure.MapperUtils;
 import com.davinchicoder.springbank.ledger.domain.LedgerEntry;

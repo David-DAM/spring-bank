@@ -3,7 +3,7 @@ package com.davinchicoder.springbank.acceptance;
 import com.bank.transaction.ObjectFactory;
 import com.bank.transaction.TransactionType;
 import com.bank.transaction.TransactionTypeEnum;
-import com.davinchicoder.springbank.ledger.infrastructure.LedgerEntryRepository;
+import com.davinchicoder.springbank.ledger.infrastructure.database.LedgerEntryRepository;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -58,6 +58,7 @@ public class TransferFeatureStepsCaseIT {
         restClient.post()
                 .uri("/api/v1/transaction")
                 .body(requestBody)
+                .header("Idempotency-Key", UUID.randomUUID().toString())
                 .exchange((_, response) -> {
                     assertEquals(200, response.getStatusCode().value());
                     return null;

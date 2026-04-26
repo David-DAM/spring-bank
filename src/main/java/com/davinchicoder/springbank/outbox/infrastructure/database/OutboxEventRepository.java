@@ -37,7 +37,6 @@ public class OutboxEventRepository {
         }).toList();
 
         repository.saveAll(entities);
-
     }
 
     public void upsertAll(List<OutboxEntity> events) {

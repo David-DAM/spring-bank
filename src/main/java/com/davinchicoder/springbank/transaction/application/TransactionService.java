@@ -2,9 +2,10 @@ package com.davinchicoder.springbank.transaction.application;
 
 import com.davinchicoder.springbank.account.domain.Account;
 import com.davinchicoder.springbank.account.infrastructure.AccountRepository;
+import com.davinchicoder.springbank.audit.domain.AuditLogEvent;
 import com.davinchicoder.springbank.ledger.domain.EntryType;
 import com.davinchicoder.springbank.ledger.domain.LedgerEntry;
-import com.davinchicoder.springbank.ledger.infrastructure.LedgerEntryRepository;
+import com.davinchicoder.springbank.ledger.infrastructure.database.LedgerEntryRepository;
 import com.davinchicoder.springbank.outbox.infrastructure.database.OutboxEventRepository;
 import com.davinchicoder.springbank.transaction.application.request.NewTransactionRequest;
 import com.davinchicoder.springbank.transaction.application.request.NewTransactionResponse;
@@ -35,13 +36,13 @@ public class TransactionService {
     @Transactional(rollbackFor = Exception.class)
     public NewTransactionResponse createTransaction(NewTransactionRequest request) {
 
-        Optional<Transaction> optionalTransaction = transactionRepository.findByIdempotencyKey(request.id());
+        Optional<Transaction> optionalTransaction = transactionRepository.findByIdempotencyKey(request.idempotencyKey());
 
         if (optionalTransaction.isPresent()) {
             log.info("Transaction already exists: {}", request.id());
             return NewTransactionResponse.of(optionalTransaction.get());
         }
-
+        //Reconciliation
         Transaction saved = saveTransaction(request);
 
         try {
@@ -116,7 +117,12 @@ public class TransactionService {
     }
 
     private void publishDomainEvents(Transaction saved) {
-        eventRepository.insertAll(List.of(TransactionCreatedEvent.of(saved)));
+
+        TransactionCreatedEvent transactionCreatedEvent = TransactionCreatedEvent.of(saved);
+
+        AuditLogEvent auditLogEvent = AuditLogEvent.of(List.of(transactionCreatedEvent));
+
+        eventRepository.insertAll(List.of(transactionCreatedEvent, auditLogEvent));
     }
 
     private void createLedgerEntries(NewTransactionRequest request, Transaction saved) {
@@ -142,7 +148,7 @@ public class TransactionService {
 
     private Transaction saveTransaction(NewTransactionRequest request) {
         Transaction transaction = Transaction.builder()
-                .idempotencyKey(request.id())
+                .idempotencyKey(request.idempotencyKey())
                 .timestamp(request.createdAt())
                 .build();
 

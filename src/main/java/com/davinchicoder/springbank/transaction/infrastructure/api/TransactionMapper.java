@@ -12,7 +12,7 @@ import org.mapstruct.ReportingPolicy;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING, unmappedTargetPolicy = ReportingPolicy.ERROR, uses = MapperUtils.class)
 public interface TransactionMapper {
 
-    NewTransactionRequest toNewTransactionRequest(TransactionType transactionType);
+    NewTransactionRequest toNewTransactionRequest(TransactionType transactionType, String idempotencyKey);
 
     TransactionResponseType toTransactionResponseType(NewTransactionResponse response);
 }

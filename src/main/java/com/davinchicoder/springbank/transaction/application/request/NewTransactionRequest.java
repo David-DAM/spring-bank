@@ -7,6 +7,7 @@ import java.time.Instant;
 
 public record NewTransactionRequest(
         String id,
+        String idempotencyKey,
         String fromAccount,
         String toAccount,
         BigDecimal amount,
