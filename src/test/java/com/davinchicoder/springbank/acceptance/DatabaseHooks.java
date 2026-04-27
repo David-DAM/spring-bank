@@ -18,6 +18,16 @@ public class DatabaseHooks {
         executeSql("/it/transfer/success/data.sql");
     }
 
+    @Before("@transfer-duplicated")
+    public void setupTransferDuplicated() {
+        executeSql("/it/transfer/duplicated/data.sql");
+    }
+
+    @Before("@transfer-account-not-found")
+    public void setupTransferAccountNotFound() {
+        executeSql("/it/transfer/account-not-found/data.sql");
+    }
+
     @After
     public void cleanup() {
         executeSql("/it/clean.sql");

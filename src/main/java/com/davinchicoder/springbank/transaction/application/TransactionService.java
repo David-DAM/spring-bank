@@ -1,6 +1,7 @@
 package com.davinchicoder.springbank.transaction.application;
 
 import com.davinchicoder.springbank.account.domain.Account;
+import com.davinchicoder.springbank.account.domain.AccountNotFoundException;
 import com.davinchicoder.springbank.account.infrastructure.AccountRepository;
 import com.davinchicoder.springbank.audit.domain.AuditLogEvent;
 import com.davinchicoder.springbank.ledger.domain.EntryType;
@@ -9,6 +10,7 @@ import com.davinchicoder.springbank.ledger.infrastructure.database.LedgerEntryRe
 import com.davinchicoder.springbank.outbox.infrastructure.database.OutboxEventRepository;
 import com.davinchicoder.springbank.transaction.application.request.NewTransactionRequest;
 import com.davinchicoder.springbank.transaction.application.request.NewTransactionResponse;
+import com.davinchicoder.springbank.transaction.domain.InvalidTransactionException;
 import com.davinchicoder.springbank.transaction.domain.Transaction;
 import com.davinchicoder.springbank.transaction.domain.TransactionCreatedEvent;
 import com.davinchicoder.springbank.transaction.infrastructure.database.TransactionRepository;
@@ -33,7 +35,7 @@ public class TransactionService {
     private final OutboxEventRepository eventRepository;
 
     @Retryable(maxRetries = 3)
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional(noRollbackFor = {InvalidTransactionException.class, AccountNotFoundException.class})
     public NewTransactionResponse createTransaction(NewTransactionRequest request) {
         log.info("Received transaction request: {}", request);
         Optional<Transaction> optionalTransaction = transactionRepository.findByIdempotencyKey(request.idempotencyKey());
@@ -42,8 +44,7 @@ public class TransactionService {
             log.info("Transaction already exists: {}", request.id());
             return NewTransactionResponse.of(optionalTransaction.get());
         }
-        //Scenarios
-        //Postgres
+
         Transaction saved = saveTransaction(request);
 
         try {
@@ -61,10 +62,13 @@ public class TransactionService {
 
             return NewTransactionResponse.of(completed);
 
-        } catch (Exception e) {
-            log.error("Error processing transaction: {}", request.id(), e);
+        } catch (InvalidTransactionException | AccountNotFoundException e) {
+            log.error("Invalid transaction: {}", request.id(), e);
             saved.fail();
             transactionRepository.update(saved);
+            throw e;
+        } catch (Exception e) {
+            log.error("Error processing transaction: {}", request.id(), e);
             throw e;
         }
     }
@@ -83,26 +87,26 @@ public class TransactionService {
         Long balanceInCents = ledgerEntryRepository.calculateBalanceInCents(request.fromAccount());
         if (balanceInCents.compareTo(request.amount().movePointRight(2).longValueExact()) < 0) {
             log.error("Insufficient funds: {}", request.fromAccount());
-            throw new IllegalStateException("Insufficient funds");
+            throw new InvalidTransactionException("Insufficient funds");
         }
     }
 
     private void validateTransaction(NewTransactionRequest request) {
         if (request.fromAccount().equals(request.toAccount())) {
             log.error("Self-transfer not allowed: {}", request.fromAccount());
-            throw new IllegalStateException("Self-transfer not allowed");
+            throw new InvalidTransactionException("Self-transfer not allowed");
         }
 
         if (request.amount().compareTo(BigDecimal.valueOf(100000)) > 0) {
             log.error("Transaction amount too high: {}", request.amount());
-            throw new IllegalStateException("Transaction amount too high");
+            throw new InvalidTransactionException("Transaction amount too high");
         }
 
         Optional<Account> optionalFrom = accountRepository.findByIban(request.fromAccount());
 
         if (optionalFrom.isEmpty()) {
             log.error("Account not found: {}", request.fromAccount());
-            throw new IllegalStateException("Account not found");
+            throw new AccountNotFoundException("Account not found %s".formatted(request.fromAccount()));
         }
 
         optionalFrom.get().validateCanOperate();
@@ -111,7 +115,7 @@ public class TransactionService {
 
         if (optionalTo.isEmpty()) {
             log.error("Account not found: {}", request.toAccount());
-            throw new IllegalStateException("Account not found");
+            throw new AccountNotFoundException("Account not found %s".formatted(request.toAccount()));
         }
 
         optionalTo.get().validateCanOperate();

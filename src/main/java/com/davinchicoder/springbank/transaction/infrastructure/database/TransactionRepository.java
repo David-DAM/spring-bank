@@ -5,6 +5,7 @@ import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -14,6 +15,10 @@ public class TransactionRepository {
     private final TransactionQueryRepository repository;
     private final TransactionEntityMapper mapper;
     private final EntityManager entityManager;
+
+    public List<Transaction> findAll() {
+        return repository.findAll().stream().map(mapper::toTransaction).toList();
+    }
 
     public Optional<Transaction> findById(String id) {
         return repository.findById(id).map(mapper::toTransaction);
