@@ -10,3 +10,12 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+  threads:
+    virtual:
+      enabled: true
+
+management:
+  logging:
+    export:
+      otlp:
+        enabled: false

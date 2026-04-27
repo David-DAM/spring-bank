@@ -35,14 +35,15 @@ public class TransactionService {
     @Retryable(maxRetries = 3)
     @Transactional(rollbackFor = Exception.class)
     public NewTransactionResponse createTransaction(NewTransactionRequest request) {
-
+        log.info("Received transaction request: {}", request);
         Optional<Transaction> optionalTransaction = transactionRepository.findByIdempotencyKey(request.idempotencyKey());
 
         if (optionalTransaction.isPresent()) {
             log.info("Transaction already exists: {}", request.id());
             return NewTransactionResponse.of(optionalTransaction.get());
         }
-        //Reconciliation
+        //Scenarios
+        //Postgres
         Transaction saved = saveTransaction(request);
 
         try {
@@ -81,26 +82,26 @@ public class TransactionService {
     private void validateBalance(NewTransactionRequest request) {
         Long balanceInCents = ledgerEntryRepository.calculateBalanceInCents(request.fromAccount());
         if (balanceInCents.compareTo(request.amount().movePointRight(2).longValueExact()) < 0) {
-            log.info("Insufficient funds: {}", request.fromAccount());
+            log.error("Insufficient funds: {}", request.fromAccount());
             throw new IllegalStateException("Insufficient funds");
         }
     }
 
     private void validateTransaction(NewTransactionRequest request) {
         if (request.fromAccount().equals(request.toAccount())) {
-            log.info("Self-transfer not allowed: {}", request.fromAccount());
+            log.error("Self-transfer not allowed: {}", request.fromAccount());
             throw new IllegalStateException("Self-transfer not allowed");
         }
 
         if (request.amount().compareTo(BigDecimal.valueOf(100000)) > 0) {
-            log.info("Transaction amount too high: {}", request.amount());
+            log.error("Transaction amount too high: {}", request.amount());
             throw new IllegalStateException("Transaction amount too high");
         }
 
         Optional<Account> optionalFrom = accountRepository.findByIban(request.fromAccount());
 
         if (optionalFrom.isEmpty()) {
-            log.info("Account not found: {}", request.fromAccount());
+            log.error("Account not found: {}", request.fromAccount());
             throw new IllegalStateException("Account not found");
         }
 
@@ -109,7 +110,7 @@ public class TransactionService {
         Optional<Account> optionalTo = accountRepository.findByIban(request.toAccount());
 
         if (optionalTo.isEmpty()) {
-            log.info("Account not found: {}", request.toAccount());
+            log.error("Account not found: {}", request.toAccount());
             throw new IllegalStateException("Account not found");
         }
 

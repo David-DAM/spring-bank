@@ -26,7 +26,7 @@ public class TransferSimulation extends Simulation {
                     http("Create Transaction")
                             .post("/api/v1/transaction")
                             .body(StringBody(this::buildXml))
-                            .header("Idempotency-Key", UUID.randomUUID().toString())
+                            .header("Idempotency-Key", _ -> UUID.randomUUID().toString())
                             .check(
                                     status().is(200),
                                     responseTimeInMillis().lt(500),

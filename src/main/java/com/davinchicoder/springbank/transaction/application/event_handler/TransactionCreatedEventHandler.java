@@ -23,6 +23,6 @@ public class TransactionCreatedEventHandler implements EventHandler<TransactionC
 
     @Override
     public void handle(TransactionCreatedEvent event) {
-        log.info("Publishing transaction: {}", event.transactionId());
+        log.info("Received TransactionCreatedEvent: {}", event.transactionId());
     }
 }

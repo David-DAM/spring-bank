@@ -25,7 +25,7 @@ public class OutboxScheduler {
 
     @Scheduled(cron = "*/5 * * * * *")
     public void findAllUnprocessedEvents() {
-
+        log.info("Finding unprocessed events");
         List<OutboxEntity> unprocessedEvents = repository.findLastUnprocessed();
 
         unprocessedEvents.forEach(event -> {
@@ -55,12 +55,14 @@ public class OutboxScheduler {
         });
 
         repository.upsertAll(unprocessedEvents);
-
+        log.info("Finished processing events");
     }
 
     @Scheduled(cron = "0 0 * * * *")
     public void clearProcessedEvents() {
+        log.info("Clearing processed events");
         repository.deleteProcessedEvents();
+        log.info("Processed events cleared");
     }
 
 }

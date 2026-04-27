@@ -4,8 +4,10 @@ import com.davinchicoder.springbank.audit.domain.AuditLogEvent;
 import com.davinchicoder.springbank.audit.infrastructure.AuditRepository;
 import com.davinchicoder.springbank.common.domain.EventHandler;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @RequiredArgsConstructor
 @Component
 public class AuditEventHandler implements EventHandler<AuditLogEvent> {
@@ -24,6 +26,7 @@ public class AuditEventHandler implements EventHandler<AuditLogEvent> {
 
     @Override
     public void handle(AuditLogEvent payload) {
+        log.info("Received AuditLogEvent: {}", payload.domainEvent());
         auditRepository.insertAll(payload.domainEvent());
     }
 }
