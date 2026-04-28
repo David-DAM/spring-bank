@@ -25,8 +25,8 @@ public class AuditEventHandler implements EventHandler<AuditLogEvent> {
     }
 
     @Override
-    public void handle(AuditLogEvent payload) {
-        log.info("Received AuditLogEvent: {}", payload.domainEvent());
-        auditRepository.insertAll(payload.domainEvent());
+    public void handle(AuditLogEvent event) {
+        log.info("Received AuditLogEvent: {}", event);
+        auditRepository.insert(event);
     }
 }

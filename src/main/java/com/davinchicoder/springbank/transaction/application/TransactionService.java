@@ -126,7 +126,7 @@ public class TransactionService {
 
         TransactionCreatedEvent transactionCreatedEvent = TransactionCreatedEvent.of(saved);
 
-        AuditLogEvent auditLogEvent = AuditLogEvent.of(List.of(transactionCreatedEvent));
+        AuditLogEvent auditLogEvent = AuditLogEvent.of(transactionCreatedEvent);
 
         eventRepository.insertAll(List.of(transactionCreatedEvent, auditLogEvent));
     }
@@ -158,6 +158,7 @@ public class TransactionService {
         Transaction transaction = Transaction.builder()
                 .idempotencyKey(request.idempotencyKey())
                 .timestamp(request.createdAt())
+                .type(request.type())
                 .build();
 
         return transactionRepository.insert(transaction);

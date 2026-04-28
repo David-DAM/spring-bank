@@ -19,7 +19,9 @@ public class TransactionEntity {
     private String idempotencyKey;
     @Version
     private Long version;
+    @Enumerated(EnumType.STRING)
     private TransactionType type;
+    @Enumerated(EnumType.STRING)
     private TransactionStatus status;
     private Instant timestamp;
 

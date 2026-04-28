@@ -1,38 +1,28 @@
 package com.davinchicoder.springbank.audit.infrastructure;
 
-import com.davinchicoder.springbank.common.domain.DomainEvent;
+import com.davinchicoder.springbank.audit.domain.AuditLogEvent;
 import com.davinchicoder.springbank.common.insfrastructure.TraceUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import tools.jackson.databind.ObjectMapper;
-
-import java.util.List;
 
 @RequiredArgsConstructor
 @Repository
 public class AuditRepository {
 
-    private final ObjectMapper objectMapper;
-
     private final AuditQueryRepository repository;
 
     private final TraceUtils tracerUtils;
 
-    public void insertAll(List<DomainEvent> events) {
+    public void insert(AuditLogEvent event) {
 
-        List<AuditEntity> entities = events.stream().map(event -> {
+        AuditEntity entity = new AuditEntity();
+        entity.setId(event.eventId());
+        entity.setEventType(event.eventType());
+        entity.setPayload(event.domainEvent());
+        entity.setCorrelationId(tracerUtils.getTraceId());
+        entity.setCreatedAt(event.occurredAt());
 
-            AuditEntity auditEvent = new AuditEntity();
-            auditEvent.setId(event.eventId());
-            auditEvent.setEventType(event.getClass().getSimpleName());
-            auditEvent.setPayload(objectMapper.writeValueAsString(event));
-            auditEvent.setCorrelationId(tracerUtils.getTraceId());
-            auditEvent.setCreatedAt(event.occurredAt());
-
-            return auditEvent;
-        }).toList();
-
-        repository.saveAll(entities);
+        repository.save(entity);
     }
 
 }
