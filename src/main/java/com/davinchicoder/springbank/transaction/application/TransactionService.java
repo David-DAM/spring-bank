@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -139,6 +140,7 @@ public class TransactionService {
                 .accountId(request.fromAccount())
                 .type(EntryType.DEBIT)
                 .amount(amountInCents)
+                .createdAt(Instant.now())
                 .build();
 
         LedgerEntry credit = LedgerEntry.builder()
@@ -146,6 +148,7 @@ public class TransactionService {
                 .accountId(request.toAccount())
                 .type(EntryType.CREDIT)
                 .amount(amountInCents)
+                .createdAt(Instant.now())
                 .build();
 
         ledgerEntryRepository.upsertAll(List.of(debit, credit));

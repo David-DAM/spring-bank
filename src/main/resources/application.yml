@@ -2,14 +2,31 @@ spring:
   application:
     name: spring-bank
   datasource:
-    url: jdbc:h2:mem:bank
-    driver-class-name: org.h2.Driver
-    username: admin
+    url: jdbc:postgresql://localhost:5432/bank
+    username: root
     password: password
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      auto-commit: false
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 300000    # 5 min
+      max-lifetime: 1800000   # 30 min
+      connection-timeout: 30000 # 30 s
+      leak-detection-threshold: 2000  # 2 s
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategySnakeCaseImpl
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        show_sql: true
+        format_sql: true
   threads:
     virtual:
       enabled: true
