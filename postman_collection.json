@@ -1,0 +1,278 @@
+{
+  "info": {
+    "_postman_id": "9bde5e2a-31dc-4109-ad7b-2fdf76817b6c",
+    "name": "Spring Bank",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "23080126"
+  },
+  "item": [
+    {
+      "name": "Create Customer",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "<Customer xmlns=\"http://bank.com/customer\">\r\n    <id>CUST-000001</id>\r\n    <name>David Jiménez</name>\r\n    <email>davinchicoder@gmail.com.com</email>\r\n    <createdAt>2026-03-18T10:45:30</createdAt>\r\n</Customer>",
+          "options": {
+            "raw": {
+              "language": "xml"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/customer",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "customer"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Create Customer",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "<Customer xmlns=\"http://bank.com/customer\">\r\n    <id>CUST-000001</id>\r\n    <name>David Jiménez</name>\r\n    <email>davinchicoder@gmail.com.com</email>\r\n    <createdAt>2026-03-18T10:45:30</createdAt>\r\n</Customer>",
+              "options": {
+                "raw": {
+                  "language": "xml"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/customer",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "customer"
+              ]
+            }
+          },
+          "_postman_previewlanguage": null,
+          "header": null,
+          "cookie": [],
+          "body": null
+        }
+      ]
+    },
+    {
+      "name": "Create Transaction",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Idempotency-Key",
+            "value": "{{IDEMPOTENCY_KEY}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "<Transaction xmlns=\"http://bank.com/transaction\">\r\n    <id>TR-000001</id>\r\n    <fromAccount>ES3601520826</fromAccount>\r\n    <toAccount>ES3601520827</toAccount>\r\n    <amount>100.50</amount>\r\n    <type>DEBIT</type>\r\n    <createdAt>2026-03-18T10:45:30</createdAt>\r\n</Transaction>",
+          "options": {
+            "raw": {
+              "language": "xml"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/transaction",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "transaction"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Create Transaction",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Idempotency-Key",
+                "value": "{{IDEMPOTENCY_KEY}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "<Transaction xmlns=\"http://bank.com/transaction\">\r\n    <id>TR-000001</id>\r\n    <fromAccount>ES3601520826</fromAccount>\r\n    <toAccount>ES3601520827</toAccount>\r\n    <amount>100.50</amount>\r\n    <type>DEBIT</type>\r\n    <createdAt>2026-03-18T10:45:30</createdAt>\r\n</Transaction>",
+              "options": {
+                "raw": {
+                  "language": "xml"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/transaction",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "transaction"
+              ]
+            }
+          },
+          "_postman_previewlanguage": null,
+          "header": null,
+          "cookie": [],
+          "body": null
+        }
+      ]
+    },
+    {
+      "name": "Get Customer by id",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/xml",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "xml"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/customer/:id",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "customer",
+            ":id"
+          ],
+          "variable": [
+            {
+              "key": "id",
+              "value": "6d9c9721-2220-452b-8106-c79faaa626c5"
+            }
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Get Customer by id",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/xml",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "xml"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/customer/:id",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "customer",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "6d9c9721-2220-452b-8106-c79faaa626c5"
+                }
+              ]
+            }
+          },
+          "_postman_previewlanguage": null,
+          "header": null,
+          "cookie": [],
+          "body": null
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          "pm.collectionVariables.set(\"IDEMPOTENCY_KEY\", pm.variables.replaceIn(\"{{$guid}}\"));"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": ""
+    },
+    {
+      "key": "IDEMPOTENCY_KEY",
+      "value": ""
+    }
+  ]
+}
