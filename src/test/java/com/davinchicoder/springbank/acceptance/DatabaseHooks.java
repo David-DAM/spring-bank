@@ -15,22 +15,22 @@ public class DatabaseHooks {
 
     @Before("@transfer-success")
     public void setupTransferSuccess() {
-        executeSql("/it/transfer/success/data.sql");
+        executeSql("/features/data/transfer/success/data.sql");
     }
 
     @Before("@transfer-duplicated")
     public void setupTransferDuplicated() {
-        executeSql("/it/transfer/duplicated/data.sql");
+        executeSql("/features/data/transfer/duplicated/data.sql");
     }
 
     @Before("@transfer-account-not-found")
     public void setupTransferAccountNotFound() {
-        executeSql("/it/transfer/account-not-found/data.sql");
+        executeSql("/features/data/transfer/account-not-found/data.sql");
     }
 
     @After
     public void cleanup() {
-        executeSql("/it/clean.sql");
+        executeSql("/features/data/clean.sql");
     }
 
     private void executeSql(String path) {
