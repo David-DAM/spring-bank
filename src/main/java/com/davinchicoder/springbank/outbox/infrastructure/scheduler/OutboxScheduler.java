@@ -23,7 +23,7 @@ public class OutboxScheduler {
     private final OutboxEventHandlerRegistry handlerRegistry;
     private final ObjectMapper mapper;
 
-    @Scheduled(cron = "*/5 * * * * *")
+    @Scheduled(cron = "*/2 * * * * *")
     public void findAllUnprocessedEvents() {
         log.info("Finding unprocessed events");
         List<OutboxEntity> unprocessedEvents = repository.findLastUnprocessed();

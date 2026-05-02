@@ -28,6 +28,11 @@ public class DatabaseHooks {
         executeSql("/features/data/transfer/account-not-found/data.sql");
     }
 
+    @Before("@transfer-concurrent")
+    public void setupTransferConcurrent() {
+        executeSql("/features/data/transfer/concurrent/data.sql");
+    }
+
     @After
     public void cleanup() {
         executeSql("/features/data/clean.sql");

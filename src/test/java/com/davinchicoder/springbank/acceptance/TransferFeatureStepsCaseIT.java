@@ -23,10 +23,13 @@ import javax.xml.datatype.DatatypeFactory;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZoneId;
-import java.util.GregorianCalendar;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @ScenarioScope
 @CucumberContextConfiguration
@@ -62,8 +65,13 @@ public class TransferFeatureStepsCaseIT {
 
     @Then("The final amount is {int} euros")
     public void the_final_amount_is_euros(Integer expected) {
-        Long balanceInCents = ledgerEntryRepository.calculateBalanceInCents(FROM_ACCOUNT);
-        assertEquals(expected, balanceInCents.intValue() / 100);
+        await().atMost(5, TimeUnit.SECONDS)
+                .pollInterval(200, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> {
+                    Long balanceInCents = ledgerEntryRepository.calculateBalanceInCents(FROM_ACCOUNT);
+                    assertNotNull(balanceInCents);
+                    assertEquals(expected, balanceInCents.intValue() / 100);
+                });
     }
 
     @When("I transfer {int} euros to another twice by slow internet")
@@ -92,13 +100,6 @@ public class TransferFeatureStepsCaseIT {
                 });
     }
 
-    @Then("The final amount is still {int} euros and not {int}")
-    public void the_final_amount_is_euros(Integer expected, Integer unexpected) {
-        Long balanceInCents = ledgerEntryRepository.calculateBalanceInCents(FROM_ACCOUNT);
-        assertEquals(expected, balanceInCents.intValue() / 100);
-        assertNotEquals(unexpected, balanceInCents.intValue() / 100);
-    }
-
     @When("I try to transfer {int} euros to non existent account")
     public void i_try_to_transfer_euros_to_non_existent_account(Integer quantity) throws DatatypeConfigurationException {
 
@@ -109,16 +110,20 @@ public class TransferFeatureStepsCaseIT {
                 .body(requestBody)
                 .header("Idempotency-Key", UUID.randomUUID().toString())
                 .exchange((_, response) -> {
-                    assertEquals(404, response.getStatusCode().value());
+                    assertEquals(200, response.getStatusCode().value());
                     return null;
                 });
 
     }
 
-    @Then("I got an error and i am not able")
-    public void i_got_an_error_and_i_am_not_able() {
-        Transaction transaction = transactionRepository.findAll().getFirst();
-        assertEquals(TransactionStatus.FAILED, transaction.getStatus());
+    @Then("I got an error and my transaction is failed")
+    public void i_got_an_error_and_my_transaction_is_failed() {
+        await().atMost(5, TimeUnit.SECONDS)
+                .pollInterval(200, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> {
+                    Transaction transaction = transactionRepository.findAll().getFirst();
+                    assertEquals(TransactionStatus.FAILED, transaction.getStatus());
+                });
     }
 
     private @NonNull JAXBElement<TransactionType> createTransactionRequest(Integer quantity) throws DatatypeConfigurationException {
@@ -132,5 +137,79 @@ public class TransferFeatureStepsCaseIT {
         transactionType.setCreatedAt(DatatypeFactory.newInstance().newXMLGregorianCalendar(GregorianCalendar.from(Instant.now().atZone(ZoneId.systemDefault()))));
 
         return new ObjectFactory().createTransaction(transactionType);
+    }
+
+    @When("I try to transfer {int} euros twice in different transactions very quickly")
+    public void i_try_to_transfer_euros_twice_in_different_transactions_very_quickly(Integer quantity) throws InterruptedException, DatatypeConfigurationException {
+
+        JAXBElement<TransactionType> request1 = createTransactionRequest(quantity);
+        JAXBElement<TransactionType> request2 = createTransactionRequest(quantity);
+
+        CountDownLatch ready = new CountDownLatch(2);
+        CountDownLatch start = new CountDownLatch(1);
+        CountDownLatch done = new CountDownLatch(2);
+
+        List<Integer> responses = Collections.synchronizedList(new ArrayList<>());
+
+        Runnable task1 = () -> {
+            try {
+                ready.countDown();
+                start.await();
+
+                int status = restClient.post()
+                        .uri("/api/v1/transaction")
+                        .body(request1)
+                        .header("Idempotency-Key", UUID.randomUUID().toString())
+                        .retrieve()
+                        .toBodilessEntity()
+                        .getStatusCode()
+                        .value();
+
+                responses.add(status);
+
+            } catch (Exception e) {
+                responses.add(500);
+            } finally {
+                done.countDown();
+            }
+        };
+
+        Runnable task2 = () -> {
+            try {
+                ready.countDown();
+                start.await();
+
+                int status = restClient.post()
+                        .uri("/api/v1/transaction")
+                        .body(request2)
+                        .header("Idempotency-Key", UUID.randomUUID().toString())
+                        .retrieve()
+                        .toBodilessEntity()
+                        .getStatusCode()
+                        .value();
+
+                responses.add(status);
+
+            } catch (Exception e) {
+                responses.add(500);
+            } finally {
+                done.countDown();
+            }
+        };
+
+        new Thread(task1).start();
+        new Thread(task2).start();
+
+        ready.await();
+        start.countDown();
+        done.await();
+
+        assertEquals(2, responses.size());
+
+        long success = responses.stream().filter(s -> s == 200).count();
+        long failed = responses.stream().filter(s -> s != 200).count();
+
+        assertEquals(2, success);
+        assertEquals(0, failed);
     }
 }
