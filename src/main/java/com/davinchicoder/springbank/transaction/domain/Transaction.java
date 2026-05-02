@@ -1,13 +1,14 @@
 package com.davinchicoder.springbank.transaction.domain;
 
+import com.davinchicoder.springbank.audit.domain.AuditableDomain;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-import java.time.Instant;
-
+@EqualsAndHashCode(callSuper = false)
 @Data
 @Builder
-public class Transaction {
+public class Transaction extends AuditableDomain {
 
     private String id;
     private String idempotencyKey;
@@ -15,7 +16,6 @@ public class Transaction {
     private TransactionType type;
     @Builder.Default
     private TransactionStatus status = TransactionStatus.PENDING;
-    private Instant timestamp;
 
     public void reserve() {
         ensureState(TransactionStatus.PENDING);

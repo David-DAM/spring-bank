@@ -12,7 +12,7 @@ public record NewTransactionResponse(
 ) {
 
     public static NewTransactionResponse of(Transaction transaction) {
-        return new NewTransactionResponse(transaction.getId(), transaction.getStatus(), transaction.getTimestamp());
+        return new NewTransactionResponse(transaction.getId(), transaction.getStatus(), Instant.now());
     }
 
 }

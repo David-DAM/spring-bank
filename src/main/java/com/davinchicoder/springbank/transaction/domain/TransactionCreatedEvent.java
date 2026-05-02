@@ -15,7 +15,7 @@ public record TransactionCreatedEvent(
         return new TransactionCreatedEvent(
                 UUID.randomUUID().toString(),
                 transaction.getId(),
-                transaction.getTimestamp()
+                Instant.now()
         );
     }
 

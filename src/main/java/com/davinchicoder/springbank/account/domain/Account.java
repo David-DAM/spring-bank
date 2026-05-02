@@ -1,16 +1,18 @@
 package com.davinchicoder.springbank.account.domain;
 
+import com.davinchicoder.springbank.audit.domain.AuditableDomain;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-import java.time.Instant;
-
+@EqualsAndHashCode(callSuper = false)
 @Data
-public class Account {
+public class Account extends AuditableDomain {
 
     private String id;
+    private Long version;
     private String iban;
+    private Long balanceInCents;
     private AccountStatus status;
-    private Instant createdAt;
 
     public void validateCanOperate() {
         if (!AccountStatus.ACTIVE.equals(status)) {

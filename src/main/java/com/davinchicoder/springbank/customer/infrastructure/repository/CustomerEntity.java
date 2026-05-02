@@ -1,14 +1,15 @@
 package com.davinchicoder.springbank.customer.infrastructure.repository;
 
+import com.davinchicoder.springbank.audit.infrastructure.AuditableEntity;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.time.Instant;
-
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "customers")
-public class CustomerEntity {
+public class CustomerEntity extends AuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -19,7 +20,5 @@ public class CustomerEntity {
     private String name;
 
     private String email;
-
-    private Instant createdAt;
 
 }

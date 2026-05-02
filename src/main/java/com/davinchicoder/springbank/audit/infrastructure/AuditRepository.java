@@ -20,7 +20,6 @@ public class AuditRepository {
         entity.setEventType(event.eventType());
         entity.setPayload(event.domainEvent());
         entity.setCorrelationId(tracerUtils.getTraceId());
-        entity.setCreatedAt(event.occurredAt());
 
         repository.save(entity);
     }

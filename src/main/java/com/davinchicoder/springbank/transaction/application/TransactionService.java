@@ -21,7 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -51,7 +50,11 @@ public class TransactionService {
         try {
             validateTransaction(request);
 
-            validateBalance(request);
+            Account fromAccount = getFromAccount(request);
+
+            Long balanceInCents = calculateBalanceInCents(request);
+
+            updateAccount(fromAccount, balanceInCents);
 
             Transaction reserved = reserveTransaction(saved);
 
@@ -74,6 +77,12 @@ public class TransactionService {
         }
     }
 
+    private void updateAccount(Account fromAccount, Long balanceInCents) {
+        fromAccount.setBalanceInCents(balanceInCents);
+
+        accountRepository.upsert(fromAccount);
+    }
+
     private Transaction completeTransaction(Transaction reserved) {
         reserved.complete();
         return transactionRepository.update(reserved);
@@ -84,12 +93,27 @@ public class TransactionService {
         return transactionRepository.update(saved);
     }
 
-    private void validateBalance(NewTransactionRequest request) {
+    private Long calculateBalanceInCents(NewTransactionRequest request) {
         Long balanceInCents = ledgerEntryRepository.calculateBalanceInCents(request.fromAccount());
-        if (balanceInCents.compareTo(request.amount().movePointRight(2).longValueExact()) < 0) {
+        long transactionAmountInCents = request.amount().movePointRight(2).longValueExact();
+        if (balanceInCents.compareTo(transactionAmountInCents) < 0) {
             log.error("Insufficient funds: {}", request.fromAccount());
             throw new InvalidTransactionException("Insufficient funds");
         }
+        return balanceInCents - transactionAmountInCents;
+    }
+
+    private Account getFromAccount(NewTransactionRequest request) {
+
+        Account fromAccount = accountRepository.findByIban(request.fromAccount()).orElseThrow(() -> new AccountNotFoundException("Account not found %s".formatted(request.fromAccount())));
+
+        fromAccount.validateCanOperate();
+
+        Account toAccount = accountRepository.findByIban(request.toAccount()).orElseThrow(() -> new AccountNotFoundException("Account not found %s".formatted(request.toAccount())));
+
+        toAccount.validateCanOperate();
+
+        return fromAccount;
     }
 
     private void validateTransaction(NewTransactionRequest request) {
@@ -102,24 +126,6 @@ public class TransactionService {
             log.error("Transaction amount too high: {}", request.amount());
             throw new InvalidTransactionException("Transaction amount too high");
         }
-
-        Optional<Account> optionalFrom = accountRepository.findByIban(request.fromAccount());
-
-        if (optionalFrom.isEmpty()) {
-            log.error("Account not found: {}", request.fromAccount());
-            throw new AccountNotFoundException("Account not found %s".formatted(request.fromAccount()));
-        }
-
-        optionalFrom.get().validateCanOperate();
-
-        Optional<Account> optionalTo = accountRepository.findByIban(request.toAccount());
-
-        if (optionalTo.isEmpty()) {
-            log.error("Account not found: {}", request.toAccount());
-            throw new AccountNotFoundException("Account not found %s".formatted(request.toAccount()));
-        }
-
-        optionalTo.get().validateCanOperate();
     }
 
     private void publishDomainEvents(Transaction saved) {
@@ -140,7 +146,6 @@ public class TransactionService {
                 .accountId(request.fromAccount())
                 .type(EntryType.DEBIT)
                 .amount(amountInCents)
-                .createdAt(Instant.now())
                 .build();
 
         LedgerEntry credit = LedgerEntry.builder()
@@ -148,7 +153,6 @@ public class TransactionService {
                 .accountId(request.toAccount())
                 .type(EntryType.CREDIT)
                 .amount(amountInCents)
-                .createdAt(Instant.now())
                 .build();
 
         ledgerEntryRepository.upsertAll(List.of(debit, credit));
@@ -157,7 +161,6 @@ public class TransactionService {
     private Transaction saveTransaction(NewTransactionRequest request) {
         Transaction transaction = Transaction.builder()
                 .idempotencyKey(request.idempotencyKey())
-                .timestamp(request.createdAt())
                 .type(request.type())
                 .build();
 

@@ -6,12 +6,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Data;
 
-import java.time.Instant;
-
 @Entity
 @Data
 @Table(name = "audits")
-public class AuditEntity {
+public class AuditEntity extends AuditableEntity {
 
     @Id
     private String id;
@@ -24,7 +22,5 @@ public class AuditEntity {
     private String userId;
 
     private String correlationId;
-
-    private Instant createdAt;
 
 }

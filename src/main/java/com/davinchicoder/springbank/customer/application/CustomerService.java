@@ -32,7 +32,6 @@ public class CustomerService {
         Customer customer = Customer.builder()
                 .name(newCustomerRequest.name())
                 .email(newCustomerRequest.email())
-                .createdAt(newCustomerRequest.createdAt())
                 .build();
 
         Customer saved = customerRepository.upsert(customer);
